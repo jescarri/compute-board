@@ -1,1 +1,2 @@
-baseboard-backups/*
+compute-board-backups/*
+~compute-board.kicad_pcb.lck
