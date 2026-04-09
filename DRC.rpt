@@ -1,0 +1,22 @@
+** Drc report for compute-board.kicad_pcb **
+** Created on 2026-01-04T00:30:10-0800 **
+
+** Found 2 DRC violations **
+[starved_thermal]: Thermal relief connection to zone incomplete (layer B.Cu; 1 spokes connected to isolated island)
+    Local override; error
+    @(87.9729 mm, 29.7029 mm): Zone 'VCC_AUX' [GND] on B.Cu, priority 3
+    @(118.6180 mm, 40.8400 mm): PTH pad 15 [GND] of J1
+[clearance]: Clearance violation (rule 'Pad to Track clearance)' clearance 0.2000 mm; actual 0.1770 mm)
+    Rule: Pad to Track clearance); error
+    @(131.3429 mm, 61.1429 mm): Via [GND] on F.Cu - B.Cu
+    @(131.1229 mm, 62.0729 mm): Track [GPIO16] on F.Cu, length 3.8680 mm
+
+** Found 1 unconnected pads **
+[unconnected_items]: Missing connection between items
+    Local override; error
+    @(135.8429 mm, 78.1429 mm): Via [VCC_AUX] on F.Cu - B.Cu
+    @(134.4929 mm, 80.5929 mm): Pad 5 [VCC_AUX] of U2 on F.Cu
+
+** Found 0 Footprint errors **
+
+** End of Report **
