@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "label": "DRC",
+  "message": "0 err, 1 warn",
+  "color": "yellow"
+}
