@@ -1,0 +1,230 @@
+name: KiCad CI
+
+on:
+  pull_request:
+    paths:
+      - '**/*.kicad_sch'
+      - '**/*.kicad_pcb'
+      - '**/*.kicad_pro'
+      - '**/*.kicad_dru'
+      - 'kibot.yaml'
+      - '.github/workflows/kicad-ci.yml'
+      - '.github/scripts/**'
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+      - '.github/scripts/update-readme.sh'
+  workflow_dispatch:
+
+concurrency:
+  group: kicad-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  kibot:
+    name: KiBot (ERC, DRC, renders)
+    runs-on: ubuntu-latest
+    # Guard against loops triggered by the README auto-commit.
+    if: github.actor != 'github-actions[bot]'
+    outputs:
+      target_dir: ${{ steps.target.outputs.dir }}
+      site_url: ${{ steps.target.outputs.url }}
+      erc_errors: ${{ steps.summary.outputs.erc_errors }}
+      erc_warnings: ${{ steps.summary.outputs.erc_warnings }}
+      drc_errors: ${{ steps.summary.outputs.drc_errors }}
+      drc_warnings: ${{ steps.summary.outputs.drc_warnings }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine publish target
+        id: target
+        run: |
+          owner="${GITHUB_REPOSITORY%%/*}"
+          repo="${GITHUB_REPOSITORY##*/}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            sha="${{ github.event.pull_request.head.sha }}"
+            dir="pr-${{ github.event.number }}/${sha}"
+          else
+            dir="main"
+          fi
+          {
+            echo "dir=${dir}"
+            echo "url=https://${owner}.github.io/${repo}/${dir}"
+          } >>"$GITHUB_OUTPUT"
+
+      - name: Cache KiCad 3D models
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/kicad
+            .kibot_cache
+          key: kicad9-3d-${{ runner.os }}-v1
+
+      - name: Run KiBot
+        id: kibot
+        uses: INTI-CMNB/KiBot@v2_k9
+        continue-on-error: true
+        with:
+          config: kibot.yaml
+          dir: out
+          schema: compute-board.kicad_sch
+          board: compute-board.kicad_pcb
+          cache3D: 'YES'
+          install3D: 'YES'
+          verbose: 1
+
+      - name: Parse ERC/DRC results
+        id: summary
+        if: always()
+        run: bash .github/scripts/parse-reports.sh out
+
+      - name: Generate shields.io badges
+        if: always()
+        env:
+          ERC_ERRORS: ${{ steps.summary.outputs.erc_errors }}
+          ERC_WARNINGS: ${{ steps.summary.outputs.erc_warnings }}
+          DRC_ERRORS: ${{ steps.summary.outputs.drc_errors }}
+          DRC_WARNINGS: ${{ steps.summary.outputs.drc_warnings }}
+        run: bash .github/scripts/gen-badges.sh out
+
+      - name: Upload full artifact bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kibot-output-${{ github.event.pull_request.head.sha || github.sha }}
+          path: out/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Publish to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          destination_dir: ${{ steps.target.outputs.dir }}
+          keep_files: true
+          commit_message: 'ci: publish ${{ steps.target.outputs.dir }} from ${{ github.sha }}'
+          user_name: 'github-actions[bot]'
+          user_email: '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Fail job on ERC/DRC errors
+        if: steps.summary.outputs.erc_errors != '0' || steps.summary.outputs.drc_errors != '0'
+        run: |
+          echo "::error::ERC errors: ${{ steps.summary.outputs.erc_errors }}, DRC errors: ${{ steps.summary.outputs.drc_errors }}"
+          exit 1
+
+      - name: Fail job if KiBot itself errored
+        if: steps.kibot.outcome == 'failure' && steps.summary.outputs.erc_errors == '0' && steps.summary.outputs.drc_errors == '0'
+        run: |
+          echo "::error::KiBot step failed without producing ERC/DRC errors - check the logs above"
+          exit 1
+
+  landing:
+    name: Regenerate landing index
+    needs: kibot
+    if: always() && needs.kibot.result != 'cancelled' && needs.kibot.result != 'skipped'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: gh-pages-push
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout source (for scripts)
+        uses: actions/checkout@v4
+        with:
+          path: src
+
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: site
+
+      - name: Regenerate landing index
+        run: bash src/.github/scripts/regen-landing.sh site
+
+      - name: Commit and push
+        working-directory: site
+        run: |
+          if git diff --quiet; then
+            echo "Landing page unchanged, nothing to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "ci: refresh landing index"
+          # Retry push in case peaceiris or another run pushed concurrently.
+          for attempt in 1 2 3; do
+            if git push; then
+              exit 0
+            fi
+            echo "Push attempt ${attempt} failed, rebasing and retrying"
+            git pull --rebase origin gh-pages
+          done
+          echo "::error::Failed to push landing index after 3 attempts"
+          exit 1
+
+  pr-comment:
+    name: Post PR preview comment
+    needs: kibot
+    if: always() && github.event_name == 'pull_request' && needs.kibot.result != 'cancelled' && needs.kibot.result != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build comment body
+        env:
+          ERC_ERRORS: ${{ needs.kibot.outputs.erc_errors }}
+          ERC_WARNINGS: ${{ needs.kibot.outputs.erc_warnings }}
+          DRC_ERRORS: ${{ needs.kibot.outputs.drc_errors }}
+          DRC_WARNINGS: ${{ needs.kibot.outputs.drc_warnings }}
+          SITE_URL: ${{ needs.kibot.outputs.site_url }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bash .github/scripts/build-pr-comment.sh > comment.md
+
+      - name: Post sticky comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: kicad-ci
+          path: comment.md
+
+  update-readme:
+    name: Update main README
+    needs: kibot
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.kibot.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Update CI block in README
+        env:
+          SITE_URL: ${{ needs.kibot.outputs.site_url }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: bash .github/scripts/update-readme.sh
+
+      - name: Commit and push
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'docs(readme): update CI preview [skip ci]'
+          file_pattern: README.md
+          commit_user_name: 'github-actions[bot]'
+          commit_user_email: '41898282+github-actions[bot]@users.noreply.github.com'

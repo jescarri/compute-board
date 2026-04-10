@@ -1,0 +1,170 @@
+# KiBot configuration for compute-board
+# Docs: https://kibot.readthedocs.io/
+# This config drives the GitHub Actions workflow at .github/workflows/kicad-ci.yml.
+# Edit here; CI will pick changes up automatically.
+
+kibot:
+  version: 1
+
+global:
+  # Emit KiBot's own per-run log into the output directory so it lands in the
+  # published artifacts alongside the ERC/DRC reports.
+  output: '%f-%i.%x'
+
+preflight:
+  run_erc: true
+  run_drc: true
+  check_zone_fills: true
+  update_xml: true
+  erc:
+    format: [HTML, JSON, RPT]
+    dir: reports
+  drc:
+    format: [HTML, JSON, RPT]
+    dir: reports
+    all_track_errors: true
+
+outputs:
+  # ---------- Schematic ----------
+  - name: schematic_pdf
+    comment: 'Schematic (PDF)'
+    type: pdf_sch_print
+    dir: schematic
+    options:
+      output: '%f-schematic.pdf'
+
+  - name: schematic_svg
+    comment: 'Schematic (SVG)'
+    type: svg_sch_print
+    dir: schematic
+    options:
+      output: '%f-schematic.svg'
+
+  # ---------- PCB layers (single PDF, one sheet per layer view) ----------
+  - name: pcb_print_pdf
+    comment: 'PCB layers (PDF)'
+    type: pcb_print
+    dir: pcb
+    options:
+      output: '%f-pcb.pdf'
+      format: PDF
+      pages:
+        - sheet: 'Front composite'
+          layers:
+            - layer: F.Cu
+            - layer: F.Silkscreen
+            - layer: F.Mask
+            - layer: Edge.Cuts
+        - sheet: 'Back composite'
+          layers:
+            - layer: B.Cu
+            - layer: B.Silkscreen
+            - layer: B.Mask
+            - layer: Edge.Cuts
+        - sheet: 'F.Cu'
+          layers:
+            - layer: F.Cu
+            - layer: Edge.Cuts
+        - sheet: 'In1.Cu'
+          layers:
+            - layer: In1.Cu
+            - layer: Edge.Cuts
+        - sheet: 'In2.Cu'
+          layers:
+            - layer: In2.Cu
+            - layer: Edge.Cuts
+        - sheet: 'B.Cu'
+          layers:
+            - layer: B.Cu
+            - layer: Edge.Cuts
+        - sheet: 'F.Silkscreen'
+          layers:
+            - layer: F.Silkscreen
+            - layer: Edge.Cuts
+        - sheet: 'B.Silkscreen'
+          layers:
+            - layer: B.Silkscreen
+            - layer: Edge.Cuts
+        - sheet: 'Edge.Cuts'
+          layers:
+            - layer: Edge.Cuts
+
+  # ---------- Stylised board images (PcbDraw) ----------
+  - name: pcbdraw_front
+    comment: 'PCB front (PcbDraw)'
+    type: pcbdraw
+    dir: pcb
+    options:
+      format: png
+      dpi: 300
+      output: '%f-pcbdraw-front.png'
+
+  - name: pcbdraw_back
+    comment: 'PCB back (PcbDraw)'
+    type: pcbdraw
+    dir: pcb
+    options:
+      format: png
+      dpi: 300
+      bottom: true
+      output: '%f-pcbdraw-back.png'
+
+  # ---------- 3D renders (ray-traced top, fast bottom + iso) ----------
+  - name: render_3d_top
+    comment: '3D render - top (ray-traced)'
+    type: render_3d
+    dir: 3d
+    options:
+      output: top.png
+      ray_tracing: true
+      width: 1600
+      height: 1200
+      view: top
+      zoom: 3
+
+  - name: render_3d_bottom
+    comment: '3D render - bottom'
+    type: render_3d
+    dir: 3d
+    options:
+      output: bottom.png
+      width: 1600
+      height: 1200
+      view: bottom
+      zoom: 3
+
+  - name: render_3d_iso
+    comment: '3D render - iso view'
+    type: render_3d
+    dir: 3d
+    options:
+      output: iso.png
+      width: 1600
+      height: 1200
+      rotate_x: 3  # units of 10deg -> 30deg
+      rotate_z: -2 # -20deg
+      zoom: 3
+
+  # ---------- STEP (mechanical handoff) ----------
+  - name: step
+    comment: 'STEP file'
+    type: step
+    dir: '.'
+    options:
+      output: '%f.step'
+
+  # ---------- Structured ERC/DRC report (markdown + data) ----------
+  - name: report
+    comment: 'Project report'
+    type: report
+    dir: reports
+    options:
+      output: '%f-report.txt'
+
+  # ---------- Browsable HTML index of everything above ----------
+  - name: navigate_results
+    comment: 'Navigate results (HTML index)'
+    type: navigate_results
+    dir: '.'
+    options:
+      link_from_root: index.html
