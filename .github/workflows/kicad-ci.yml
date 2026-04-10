@@ -81,6 +81,10 @@ jobs:
           install3D: 'YES'
           verbose: 1
 
+      - name: Fix KiBot output ownership
+        if: always()
+        run: sudo chown -R "$(id -u):$(id -g)" out || true
+
       - name: Parse ERC/DRC results
         id: summary
         if: always()
