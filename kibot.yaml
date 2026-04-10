@@ -1,0 +1,187 @@
+# KiBot configuration for compute-board
+# Docs: https://kibot.readthedocs.io/
+# This config drives the GitHub Actions workflow at .github/workflows/kicad-ci.yml.
+# Edit here; CI will pick changes up automatically.
+
+kibot:
+  version: 1
+
+global:
+  # Emit KiBot's own per-run log into the output directory so it lands in the
+  # published artifacts alongside the ERC/DRC reports.
+  output: '%f-%i.%x'
+
+preflight:
+  run_erc: true
+  run_drc: true
+  check_zone_fills: true
+  update_xml: true
+  filters:
+    # Library-table configuration warnings. The CI container does not share
+    # the user's local KiCad global library tables, so any footprint/symbol
+    # linked to a user-local library fires these. Not a real ERC/DRC issue;
+    # silenced so the preflight reports meaningful board state.
+    - filter: 'lib_footprint_issues (library config, not a real DRC issue)'
+      error: 'lib_footprint_issues'
+      regex: '.*'
+    - filter: 'footprint_link_issues (library config, ERC variant)'
+      error: 'footprint_link_issues'
+      regex: '.*'
+    # Cosmetic: silkscreen clipped by board outline. Review on the next
+    # board spin; not a functional defect.
+    - filter: 'silk_edge_clearance (cosmetic, review manually)'
+      error: 'silk_edge_clearance'
+      regex: '.*'
+
+outputs:
+  # ERC and DRC reports are produced by the preflight above as plain-text
+  # files at the out/ root (compute-board-erc.txt, compute-board-drc.txt).
+  # parse-reports.sh reads those; no explicit erc/drc output types exist
+  # in KiBot 1.8.5.
+
+  # ---------- Schematic ----------
+  - name: schematic_pdf
+    comment: 'Schematic (PDF)'
+    type: pdf_sch_print
+    dir: schematic
+    options:
+      output: '%f-schematic.pdf'
+
+  - name: schematic_svg
+    comment: 'Schematic (SVG)'
+    type: svg_sch_print
+    dir: schematic
+    options:
+      output: '%f-schematic.svg'
+
+  # ---------- PCB layers (single PDF, one sheet per layer view) ----------
+  - name: pcb_print_pdf
+    comment: 'PCB layers (PDF)'
+    type: pcb_print
+    dir: pcb
+    options:
+      output: '%f-pcb.pdf'
+      format: PDF
+      pages:
+        - sheet: 'Front composite'
+          layers:
+            - layer: F.Cu
+            - layer: F.Silkscreen
+            - layer: F.Mask
+            - layer: Edge.Cuts
+        - sheet: 'Back composite'
+          layers:
+            - layer: B.Cu
+            - layer: B.Silkscreen
+            - layer: B.Mask
+            - layer: Edge.Cuts
+        - sheet: 'F.Cu'
+          layers:
+            - layer: F.Cu
+            - layer: Edge.Cuts
+        - sheet: 'In1.Cu'
+          layers:
+            - layer: In1.Cu
+            - layer: Edge.Cuts
+        - sheet: 'In2.Cu'
+          layers:
+            - layer: In2.Cu
+            - layer: Edge.Cuts
+        - sheet: 'B.Cu'
+          layers:
+            - layer: B.Cu
+            - layer: Edge.Cuts
+        - sheet: 'F.Silkscreen'
+          layers:
+            - layer: F.Silkscreen
+            - layer: Edge.Cuts
+        - sheet: 'B.Silkscreen'
+          layers:
+            - layer: B.Silkscreen
+            - layer: Edge.Cuts
+        - sheet: 'Edge.Cuts'
+          layers:
+            - layer: Edge.Cuts
+
+  # ---------- Stylised board images (PcbDraw) ----------
+  - name: pcbdraw_front
+    comment: 'PCB front (PcbDraw)'
+    type: pcbdraw
+    dir: pcb
+    options:
+      format: png
+      dpi: 300
+      output: '%f-pcbdraw-front.png'
+
+  - name: pcbdraw_back
+    comment: 'PCB back (PcbDraw)'
+    type: pcbdraw
+    dir: pcb
+    options:
+      format: png
+      dpi: 300
+      bottom: true
+      output: '%f-pcbdraw-back.png'
+
+  # ---------- 3D renders (ray-traced top, fast bottom + iso) ----------
+  # auto_crop trims empty background so the board fills the image without
+  # needing a zoom factor. Leaving zoom unset uses the default "fit to
+  # viewport" behaviour; setting zoom > 1 clips the board (see git history).
+  - name: render_3d_top
+    comment: '3D render - top (ray-traced)'
+    type: render_3d
+    dir: 3d
+    options:
+      output: top.png
+      ray_tracing: true
+      width: 1600
+      height: 1200
+      view: top
+      auto_crop: true
+
+  - name: render_3d_bottom
+    comment: '3D render - bottom'
+    type: render_3d
+    dir: 3d
+    options:
+      output: bottom.png
+      width: 1600
+      height: 1200
+      view: bottom
+      auto_crop: true
+
+  - name: render_3d_iso
+    comment: '3D render - iso view'
+    type: render_3d
+    dir: 3d
+    options:
+      output: iso.png
+      width: 1600
+      height: 1200
+      rotate_x: 3  # units of 10deg -> 30deg
+      rotate_z: -2 # -20deg
+      auto_crop: true
+
+  # ---------- STEP (mechanical handoff) ----------
+  - name: step
+    comment: 'STEP file'
+    type: step
+    dir: '.'
+    options:
+      output: '%f.step'
+
+  # ---------- Structured ERC/DRC report (markdown + data) ----------
+  - name: report
+    comment: 'Project report'
+    type: report
+    dir: reports
+    options:
+      output: '%f-report.txt'
+
+  # ---------- Browsable HTML index of everything above ----------
+  - name: navigate_results
+    comment: 'Navigate results (HTML index)'
+    type: navigate_results
+    dir: '.'
+    options:
+      link_from_root: index.html
