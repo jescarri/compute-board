@@ -34,23 +34,10 @@ preflight:
       regex: '.*'
 
 outputs:
-  # ---------- ERC / DRC structured reports ----------
-  # The preflight above runs the checks; these outputs re-serialize the
-  # same results into HTML/JSON/RPT so the artifact bundle (and the parser
-  # in .github/scripts/parse-reports.sh) can consume them.
-  - name: erc_report
-    comment: 'ERC report (HTML/JSON/RPT)'
-    type: erc
-    dir: reports
-    options:
-      format: [HTML, JSON, RPT]
-
-  - name: drc_report
-    comment: 'DRC report (HTML/JSON/RPT)'
-    type: drc
-    dir: reports
-    options:
-      format: [HTML, JSON, RPT]
+  # ERC and DRC reports are produced by the preflight above as plain-text
+  # files at the out/ root (compute-board-erc.txt, compute-board-drc.txt).
+  # parse-reports.sh reads those; no explicit erc/drc output types exist
+  # in KiBot 1.8.5.
 
   # ---------- Schematic ----------
   - name: schematic_pdf
