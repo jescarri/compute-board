@@ -80,6 +80,10 @@ jobs:
           cache3D: 'YES'
           install3D: 'YES'
           verbose: 1
+          # On `push` to main, origin/main == HEAD, so the diff outputs
+          # would have nothing to compare. --invert-sel + --target names
+          # runs every output EXCEPT the listed ones.
+          additional_args: ${{ github.event_name == 'pull_request' && ' ' || '--invert-sel --target diff_pcb --target diff_sch' }}
 
       - name: Fix KiBot output ownership
         if: always()

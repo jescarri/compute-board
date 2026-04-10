@@ -42,6 +42,8 @@ render_top="${site_url}/3d/top.png"
 render_bottom="${site_url}/3d/bottom.png"
 render_iso="${site_url}/3d/iso.png"
 step_file="${site_url}/compute-board.step"
+diff_pcb="${site_url}/diff/compute-board-pcb-diff.pdf"
+diff_sch="${site_url}/diff/compute-board-sch-diff.pdf"
 
 cat <<MARKDOWN
 ## KiCad CI preview &mdash; \`${short_sha}\`
@@ -62,6 +64,11 @@ cat <<MARKDOWN
 | Front | Back |
 |---|---|
 | ![front](${pcbdraw_front}) | ![back](${pcbdraw_back}) |
+
+### Diff vs \`main\`
+
+- [PCB diff (PDF)](${diff_pcb})
+- [Schematic diff (PDF)](${diff_sch})
 
 ### Downloads
 
