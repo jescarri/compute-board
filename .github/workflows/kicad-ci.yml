@@ -160,13 +160,16 @@ jobs:
       - name: Commit and push
         working-directory: site
         run: |
-          if git diff --quiet; then
-            echo "Landing page unchanged, nothing to commit"
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
+          # Nothing to do if the staged tree is unchanged (covers both "file
+          # unchanged" and "file absent and still absent"). Checking the staged
+          # state works for new untracked files, which a plain `git diff` misses.
+          if git diff --cached --quiet; then
+            echo "Landing page unchanged, nothing to commit"
+            exit 0
+          fi
           git commit -m "ci: refresh landing index"
           # Retry push in case peaceiris or another run pushed concurrently.
           for attempt in 1 2 3; do
