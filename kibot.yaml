@@ -124,6 +124,9 @@ outputs:
       output: '%f-pcbdraw-back.png'
 
   # ---------- 3D renders (ray-traced top, fast bottom + iso) ----------
+  # auto_crop trims empty background so the board fills the image without
+  # needing a zoom factor. Leaving zoom unset uses the default "fit to
+  # viewport" behaviour; setting zoom > 1 clips the board (see git history).
   - name: render_3d_top
     comment: '3D render - top (ray-traced)'
     type: render_3d
@@ -134,7 +137,7 @@ outputs:
       width: 1600
       height: 1200
       view: top
-      zoom: 3
+      auto_crop: true
 
   - name: render_3d_bottom
     comment: '3D render - bottom'
@@ -145,7 +148,7 @@ outputs:
       width: 1600
       height: 1200
       view: bottom
-      zoom: 3
+      auto_crop: true
 
   - name: render_3d_iso
     comment: '3D render - iso view'
@@ -157,7 +160,7 @@ outputs:
       height: 1200
       rotate_x: 3  # units of 10deg -> 30deg
       rotate_z: -2 # -20deg
-      zoom: 3
+      auto_crop: true
 
   # ---------- STEP (mechanical handoff) ----------
   - name: step

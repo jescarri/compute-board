@@ -31,6 +31,18 @@ icon_for() {
 erc_icon=$(icon_for "$erc_errors" "$erc_warnings")
 drc_icon=$(icon_for "$drc_errors" "$drc_warnings")
 
+# File paths on the published preview site. These must match the `dir:` and
+# `output:` settings in kibot.yaml.
+schematic_pdf="${site_url}/schematic/compute-board-schematic.pdf"
+schematic_svg="${site_url}/schematic/compute-board-schematic.svg"
+pcb_layers_pdf="${site_url}/pcb/compute-board-pcb.pdf"
+pcbdraw_front="${site_url}/pcb/compute-board-pcbdraw-front.png"
+pcbdraw_back="${site_url}/pcb/compute-board-pcbdraw-back.png"
+render_top="${site_url}/3d/top.png"
+render_bottom="${site_url}/3d/bottom.png"
+render_iso="${site_url}/3d/iso.png"
+step_file="${site_url}/compute-board.step"
+
 cat <<MARKDOWN
 ## KiCad CI preview &mdash; \`${short_sha}\`
 
@@ -39,18 +51,24 @@ cat <<MARKDOWN
 | ERC | ${erc_icon} ${erc_errors} error(s), ${erc_warnings} warning(s) |
 | DRC | ${drc_icon} ${drc_errors} error(s), ${drc_warnings} warning(s) |
 
-### 3D preview (top)
+### 3D renders
 
-![top](${site_url}/3d/top.png)
+| Top (ray-traced) | Bottom | Iso |
+|---|---|---|
+| ![top](${render_top}) | ![bottom](${render_bottom}) | ![iso](${render_iso}) |
 
-### More
+### PCB layers
 
+| Front | Back |
+|---|---|
+| ![front](${pcbdraw_front}) | ![back](${pcbdraw_back}) |
+
+### Downloads
+
+- [Schematic (PDF)](${schematic_pdf}) &middot; [SVG](${schematic_svg})
+- [PCB layers (PDF)](${pcb_layers_pdf})
+- [STEP file](${step_file})
 - [Browse full preview site](${site_url}/)
-- [Schematic PDF](${site_url}/schematic/)
-- [PCB layers PDF](${site_url}/pcb/)
-- [3D renders](${site_url}/3d/)
-- [STEP file](${site_url}/)
-- Download everything as a workflow artifact from the run summary.
 
-<sub>This comment is updated on every push to the PR branch. Images are hosted on GitHub Pages at <code>${site_url}/</code>.</sub>
+<sub>This comment is updated on every push to the PR branch. Previews hosted on GitHub Pages at <code>${site_url}/</code>.</sub>
 MARKDOWN
