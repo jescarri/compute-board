@@ -12076,7 +12076,7 @@
 			(justify left bottom mirror)
 		)
 	)
-	(gr_text "COMPUTE BOARD V1.0.0\nJAN/2026\nVA7RCV"
+	(gr_text "COMPUTE BOARD V1.0.1\nAPRIL/2026\nVA7RCV"
 		(at 150.092893 97.892893 0)
 		(layer "B.SilkS")
 		(uuid "1dfda00f-d8fe-4331-8802-3e2789b2f6c9")
