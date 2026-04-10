@@ -15,8 +15,8 @@ It expects a 4-layer PCB with controlled impedance to 50 ohms.
 |---|---|
 | ![top](https://jescarri.github.io/compute-board/main/3d/top.png) | ![bottom](https://jescarri.github.io/compute-board/main/3d/bottom.png) |
 
-- [Schematic (PDF)](https://jescarri.github.io/compute-board/main/schematic/)
-- [PCB layers (PDF)](https://jescarri.github.io/compute-board/main/pcb/)
+- [Schematic (PDF)](https://jescarri.github.io/compute-board/main/schematic/compute-board-schematic.pdf)
+- [PCB layers (PDF)](https://jescarri.github.io/compute-board/main/pcb/compute-board-pcb.pdf)
 - [STEP file](https://jescarri.github.io/compute-board/main/)
 - [Full preview site](https://jescarri.github.io/compute-board/main/)
 

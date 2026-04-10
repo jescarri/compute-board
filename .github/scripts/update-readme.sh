@@ -43,8 +43,8 @@ ${start_marker}
 |---|---|
 | ![top](${site_url}/3d/top.png) | ![bottom](${site_url}/3d/bottom.png) |
 
-- [Schematic (PDF)](${site_url}/schematic/)
-- [PCB layers (PDF)](${site_url}/pcb/)
+- [Schematic (PDF)](${site_url}/schematic/compute-board-schematic.pdf)
+- [PCB layers (PDF)](${site_url}/pcb/compute-board-pcb.pdf)
 - [STEP file](${site_url}/)
 - [Full preview site](${site_url}/)
 
