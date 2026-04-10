@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api:*)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "WebFetch(domain:kibot.readthedocs.io)",
+      "WebFetch(domain:inti-cmnb.github.io)",
+      "Bash(gh repo:*)",
+      "Bash(command -v shellcheck)",
+      "Bash(shellcheck .github/scripts/*.sh)",
+      "Bash(python3:*)",
+      "Bash(/usr/bin/python3:*)",
+      "Read(//tmp/**)",
+      "Bash(rm -rf ghp-test)",
+      "Bash(rm -rf badges-test)",
+      "Bash(mkdir badges-test:*)",
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)"
+    ]
+  }
+}
