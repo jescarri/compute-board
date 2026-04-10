@@ -178,6 +178,40 @@ outputs:
     options:
       output: '%f-report.txt'
 
+  # ---------- Visual diff vs origin/main ----------
+  # KiBot checks out the old revision into a temp worktree, re-renders it,
+  # and produces a per-layer (PCB) / per-sheet (schematic) PDF with the
+  # differences highlighted. On `push` to main these are skipped via
+  # `additional_args: --invert-sel --target diff_pcb --target diff_sch`
+  # in the workflow, because the comparison would be against HEAD itself.
+  - name: diff_pcb
+    comment: 'PCB diff vs origin/main'
+    type: diff
+    dir: diff
+    options:
+      old_type: git
+      old_hash: 'origin/main'
+      new_type: current
+      pcb: true
+      only_different: true
+      add_link_id: true
+      output: '%f-pcb-diff.pdf'
+      cache_dir: .kibot_diff_cache
+
+  - name: diff_sch
+    comment: 'Schematic diff vs origin/main'
+    type: diff
+    dir: diff
+    options:
+      old_type: git
+      old_hash: 'origin/main'
+      new_type: current
+      pcb: false
+      only_different: true
+      add_link_id: true
+      output: '%f-sch-diff.pdf'
+      cache_dir: .kibot_diff_cache
+
   # ---------- Browsable HTML index of everything above ----------
   - name: navigate_results
     comment: 'Navigate results (HTML index)'
