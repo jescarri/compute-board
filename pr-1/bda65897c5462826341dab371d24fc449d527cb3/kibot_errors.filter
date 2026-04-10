@@ -1,6 +1,0 @@
-# lib_footprint_issues (library config, not a real DRC issue)
-lib_footprint_issues,.*
-# footprint_link_issues (library config, ERC variant)
-footprint_link_issues,.*
-# silk_edge_clearance (cosmetic, review manually)
-silk_edge_clearance,.*

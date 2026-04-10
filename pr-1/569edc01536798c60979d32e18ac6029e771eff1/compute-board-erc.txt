@@ -1,8 +1,0 @@
-ERC report (2026-04-10T07:35:16+0000, Encoding UTF8)
-
-***** Sheet /
-[footprint_link_issues]: The current configuration does not include the footprint library 'Project-Specific'.
-    ; warning
-    @(1.2446 mm, 1.6383 mm): Symbol J5 [104031-0811]
-
- ** ERC messages: 1  Errors 0  Warnings 1
