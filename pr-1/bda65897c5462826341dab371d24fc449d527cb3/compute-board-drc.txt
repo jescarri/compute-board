@@ -1,0 +1,26 @@
+** Drc report for compute-board.kicad_pcb **
+** Created on 2026-04-10T07:26:55+0000 **
+
+** Found 5 DRC violations **
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    ; warning
+    @(90.0 mm, 99.0 mm): Segment on Edge.Cuts
+    @(83.682893 mm, 66.322893 mm): Segment of U1 on F.Silkscreen
+[lib_footprint_issues]: The current configuration does not include the footprint library 'LOGO'.
+    ; warning
+    @(94.481211 mm, 42.582664 mm): Footprint G***
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Project-Specific'.
+    ; warning
+    @(100.838 mm, 40.84 mm): Footprint J1
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Project-Specific'.
+    ; warning
+    @(103.061893 mm, 55.157893 mm): Footprint J5
+[lib_footprint_issues]: The current configuration does not include the footprint library 'LOGO'.
+    ; warning
+    @(94.894575 mm, 42.342664 mm): Footprint G***
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** End of Report **
