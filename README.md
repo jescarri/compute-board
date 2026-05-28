@@ -20,5 +20,5 @@ It expects a 4-layer PCB with controlled impedance to 50 ohms.
 - [STEP file](https://jescarri.github.io/compute-board/main/)
 - [Full preview site](https://jescarri.github.io/compute-board/main/)
 
-_Last updated from commit `2018383` on 2026-04-10._
+_Last updated from commit `8980b51` on 2026-05-28._
 <!-- KICAD_CI:END -->
