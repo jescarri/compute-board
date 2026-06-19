@@ -1,4 +1,4 @@
-ERC report (2026-05-28T21:47:21+0000, Encoding UTF8)
+ERC report (2026-06-19T19:34:09+0000, Encoding UTF8)
 
 ***** Sheet /
 [footprint_link_issues]: The current configuration does not include the footprint library 'Project-Specific'.
