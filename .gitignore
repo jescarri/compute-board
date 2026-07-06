@@ -1,3 +1,4 @@
 compute-board-backups/*
 ~compute-board.kicad_pcb.lck
 .claude/settings.local.json
+compute-board.kicad_pcb.zip
